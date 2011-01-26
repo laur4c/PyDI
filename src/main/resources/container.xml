@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<container>
+    <bean id="ABean" fullname="beans.A">    			    	
+    </bean>
+    <bean id="BBean" fullname="beans.B">
+    	<init>
+    		<arg>"db"</arg>
+    		<arg>"localhost"</arg>
+    		<arg><ref bean="ABean" /></arg>
+    		<arg>"root"</arg>
+    	</init>    	
+    	<property name="a">aValue</property>
+    	<property name="b">
+    		<ref bean="ABean"/>
+    	</property>
+    </bean>
+</container>
+
