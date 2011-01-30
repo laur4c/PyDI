@@ -8,6 +8,9 @@ class BeanDefinition:
     
     #A collection of ArgumentBeanDefinition objects
     initArguments = None
+    
+    #A collection of AspectBeanDefinition objects
+    aspects = None
         
     def set_id(self, value):
         self.id = value
@@ -32,3 +35,9 @@ class BeanDefinition:
         
     def get_init_arguments(self):
         return self.initArguments
+    
+    def set_aspects(self, value):
+        self.aspects = value
+        
+    def get_aspects(self):
+        return self.aspects

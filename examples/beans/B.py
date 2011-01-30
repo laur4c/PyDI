@@ -4,6 +4,7 @@ class B:
     b = None
     
     def __init__(self, arg1, arg2, arg3, arg4):
+        print arg1, arg2, arg3, arg4
         self.b
     
     def set_a(self, value):

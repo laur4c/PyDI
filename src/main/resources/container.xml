@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <container>
-    <bean id="ABean" fullname="beans.A">    			    	
+    <bean id="ABean" fullname="beans.A">   
+    	<aspect ref="AnAspect">    		
+    		<pointcut method="__init__"/>
+    		<pointcut method="a_method"/>
+    		<pointcut method="b_method"/>
+    	</aspect>
     </bean>
     <bean id="BBean" fullname="beans.B">
     	<init>
@@ -14,5 +19,8 @@
     		<ref bean="ABean"/>
     	</property>
     </bean>
+	<bean id="AnAspect" fullname="beans.C">
+	</bean>    
+    
 </container>
 

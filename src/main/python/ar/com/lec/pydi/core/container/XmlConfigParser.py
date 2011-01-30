@@ -5,8 +5,6 @@ import container
 class XmlConfigParser:
     
     configFile = None
-    properties = None
-    arguments = None
     
     def __init__(self, configFile):
         self.configFile = configFile
@@ -32,35 +30,49 @@ class XmlConfigParser:
             xmlNode = context.xpathEval("//bean[@id='" + id + "']")
             xmlNode = xmlNode[0]
             
-            #initialize bean definition
-            bean = container.BeanDefinition()
-            bean.set_id(id)
-            bean.set_fullname(xmlNode.prop("fullname"))
-            
-            #iterates node childs of bean tag          
-            for child in xmlNode.children:
-                if child.parent.name == "init" and child.name == "arg":
-                    self.add_argument(child)
-                elif child.name == "property":
-                    self.add_property(child)
-            
-            bean.set_init_arguments(self.arguments)
-            bean.set_properties(self.properties)
-                        
-            context.xpathFreeContext()
-            
         except IndexError as exception:
             raise container.ConfigParserBeanNotFoundException(exception)
+
+        #initialize bean definition
+        bean = container.BeanDefinition()
+        bean.set_id(id)
+        bean.set_fullname(xmlNode.prop("fullname"))
         
+        #iterates node childs of bean tag          
+        arguments = None
+        properties = None
+        aspects = None
+
+        for child in xmlNode.children:
+                
+            if child.parent.name == "init" and child.name == "arg":
+                if arguments is None:
+                    arguments = []
+                arguments.append(self.fetch_argument(child))
+
+            elif child.name == "property":   
+                if properties is None:
+                    properties = []
+                properties.append(self.fetch_property(child))
+                
+            elif child.name == "aspect":
+                if aspects is None:
+                    aspects = []
+                aspects.append(self.fetch_aspect(child))
+            
+        bean.set_init_arguments(arguments)
+        bean.set_properties(properties)
+        bean.set_aspects(aspects)
+        
+        context.xpathFreeContext()
+       
         return bean
         
-    def add_argument(self, node):        
-        if self.arguments == None:
-            self.arguments = []
+    def fetch_argument(self, node):        
+        arg = container.ArgumentBeanDefinition()
         
         child = node.children
         while child is not None:
-            arg = container.ArgumentBeanDefinition()
                         
             if child.type == "element":
                 arg.set_type("bean")                
@@ -69,29 +81,61 @@ class XmlConfigParser:
             elif child.type == "text":
                 arg.set_type("plain")
                 arg.set_value(child.content)
-                
-            self.arguments.append(arg)
             
             child = child.next
+
+        return arg
         
-    def add_property(self, node):
-        if self.properties == None:
-            self.properties = []
+    def fetch_property(self, node):
+        property = container.PropertyBeanDefinition()
+        property.set_name(node.prop("name"))
+
+        child = node.children
+        while child is not None:           
+            if child.type == "element":                
+                property.set_type("bean")            
+                property.set_value(child.prop("bean"))                
+                
+            child = child.next
+         
+        if property.get_value() is None:
+            property.set_type("plain")
+            property.set_value(node.content);
         
+        return property
+
+    def fetch_aspect(self, node):
+        aspect = container.AspectBeanDefinition()
+        aspect.set_bean(node.prop("ref"))
+        
+        pointcuts = []
         child = node.children
         while child is not None:
-            property = container.PropertyBeanDefinition()
-            property.set_name(child.prop("name"))
-                    
-            if child.type == "element":
-                property.set_type("bean")
-                property.set_value(child.prop("bean"))
-                       
-            elif child.type == "text":
-                property.set_type("plain")
-                property.set_value(child.content)
-                
-            self.properties.append(property)
+            if child.name == "pointcut":
+                pointcuts.append(child.prop("method"))
             
             child = child.next
+
+        if len(pointcuts) is not 0:
+            aspect.set_pointcuts(pointcuts)
+            return aspect
             
+        raise container.AspectBeanDefinitionException(
+            "aspect pointcuts must be defined"
+        )
+            
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -9,12 +9,18 @@ inifile = "/export/users/laurac/src/pydi/src/main/resources/application.ini"
 env = "production"
 
 myContainer = container.Container(inifile, env)
-#myContainer.load()
+#===============================================================================
+# 
+# print "get bean B"
+# bean = myContainer.get_bean("BBean")
+# 
+# print bean
+# print bean.get_a()
+# print bean.get_b()
+#===============================================================================
 
-aBean = myContainer.get_bean("BBean")
-print aBean.get_a()
-print aBean.get_b()
-asdasdadas
-
-
+print "get bean A"
+bean = myContainer.get_bean("ABean")
+print bean
+bean.a_method("pepe", "pepa")
 
