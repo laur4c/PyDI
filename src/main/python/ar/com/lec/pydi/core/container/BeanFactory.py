@@ -1,4 +1,8 @@
 import container
+import inspect
+import re
+
+import sys
 
 class BeanFactory:
     
@@ -116,20 +120,40 @@ class BeanFactory:
             advice = getattr(aspect, "interceptor")
             
             for pointcut in descriptor.get_pointcuts():
+                self.apply_aspect(proxy, advice, pointcut)
                 
-                methodInvocation = container.MethodInvocation()
-                methodInvocation.pointcut = pointcut
+    def apply_aspect(self, proxy, advice, pointcut):
+        joinpoints = self.find_joinpoints(proxy, pointcut)
+        
+        for joinpoint in joinpoints:
+            
+            methodInvocation = container.MethodInvocation()
+            methodInvocation.pointcut = joinpoint
+            
+            method = getattr(proxy, joinpoint)
+            setattr(proxy, joinpoint, advice(method, methodInvocation))
+        
+    def find_joinpoints(self, proxy, pointcut):        
+        retval = []
                 
-                method = getattr(proxy, pointcut) 
-                setattr(proxy, pointcut, advice(method, methodInvocation))
+        if pointcut in proxy.__dict__:
+            retval.append(pointcut)
+            return retval
+                
+        members = inspect.getmembers(proxy)
+        for name, obj in members:            
+            if inspect.ismethod(obj) is False:
+                continue
+            
+            if re.search(pointcut, name) is not None:
+                retval.append(name)
+        
+        return retval
+            
+            
+            
                 
         
-        
-            
-            
-            
-                
-        #
         
         
     

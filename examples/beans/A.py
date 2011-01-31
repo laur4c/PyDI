@@ -14,3 +14,12 @@ class A:
     
     def c_method(self):
         print "c"
+        
+    def prefix_a(self):
+        print "a"
+    
+    def prefix_b(self):
+        print "b"
+        
+    def prefix_c(self):
+        print "c"

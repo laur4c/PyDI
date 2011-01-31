@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <container>
-    <bean id="ABean" fullname="beans.A">   
+    <bean id="ABean" fullname="beans.A">    
     	<aspect ref="AnAspect">    		
-    		<pointcut method="__init__"/>
+    		<pointcut method="prefix*"/>
     		<pointcut method="a_method"/>
-    		<pointcut method="b_method"/>
+    		<pointcut method="b_method"/>    		    		
+    	</aspect>
+    	<aspect ref="AnotherAspect">
+    		<pointcut method="b_method"/>    		
     	</aspect>
     </bean>
     <bean id="BBean" fullname="beans.B">
@@ -20,7 +23,9 @@
     	</property>
     </bean>
 	<bean id="AnAspect" fullname="beans.C">
-	</bean>    
+	</bean>
+	<bean id="AnotherAspect" fullname="beans.D">
+	</bean>
     
 </container>
 
