@@ -18,41 +18,6 @@ In fact i use them, but i think that using this framework can be
 helpful in keeping your code clear. 
 you only need to configure a xml file and go code your aspects. ;-)
 
-Let's see a little example
-
-xml configuration:
-
-<beans>
-  <bean id="A">
-    <aspect ref="B">
-      <pointcut method="a_method"/>
-    </aspect>
-  </bean>
-  <bean id="B"/>   
-</beans>
-
-aspect class:
-
-  class AnAspect(aspect.AbstractAspect):
-    def invoke(self, methodInvocation):
-      print "do something before proceed..."
-      methodInvocation.proceed()
-
-      print methodInvocation.returnValue()
-      print "do something after proceed"
-
-and then...
-
-  myContainer = pydi.Container("path to ini")
-  myBean = myContainer.get_bean("A")
-  myBean.a_method()
-
-  output:
-    do something before proceed
-    executing a method
-    a method returns this
-    do something after proceed
-
 
 Note: you can see full examples about how to use the framework in the
 examples directory.
