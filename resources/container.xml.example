@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<container>
+    <bean id="ABean" fullname="beans.A">    
+    	<aspect ref="AnAspect">  
+    		<!-- you can use a regular expression to define pointcuts -->  		
+    		<pointcut method="prefix*"/>
+    		<pointcut method="get_property_a"/>
+    		<pointcut method="get_property_b"/>    		    		
+    	</aspect>
+    	<aspect ref="AnotherAspect">
+    		<pointcut method="get_property_b"/>    		
+    	</aspect>
+    </bean>
+    <bean id="AnotherBean" fullname="beans.B">
+    	<!-- constructor injection -->
+    	<init>
+    		<arg>"db"</arg>
+    		<arg>"host"</arg>
+    		<arg>"user"</arg>
+    		<arg>"pass"</arg>
+    		<arg><ref bean="ABean" /></arg>    		
+    	</init>
+    	<!-- setter injection -->
+    	<property name="property">value</property>
+    	<property name="bean">
+    		<ref bean="ABean"/>
+    	</property>
+    </bean>    
+</container>
+

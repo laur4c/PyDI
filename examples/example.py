@@ -1,41 +1,17 @@
-import sys
-sys.path.append("/export/users/laurac/src/pydi/src/main/python/ar/com/lec/pydi/core")
-sys.path.append("/export/users/laurac/src/pydi/src/main/python/ar/com/lec/pydi/examples/beans")
+import pydi
 
-
-import container
-
-inifile = "/export/users/laurac/src/pydi/src/main/resources/application.ini"
+inifile = "application.ini"
 env = "production"
 
-myContainer = container.Container(inifile, env)
+myContainer = pydi.Container(inifile, env)
 
-print "get bean A"
+print "* Get bean a"
 bean = myContainer.get_bean("ABean")
-print bean
-#    bean.a_method("pepe", "pepa")
+bean.get_property_a("arg1", "arg2")
 
-bean.prefix_a()
+print "------------------------------------------------------------------------"
 
-#===============================================================================
-# print "========================================================================"
-# bean.b_method()
-#===============================================================================
-
-
-
-#===============================================================================
-# print "========================================================================"
-# print "get bean B"
-# bean = myContainer.get_bean("BBean")
-# print bean
-# a = bean.get_b()
-# a.a_method("arg 1", "arg 3")
-# a.b_method()
-# a.prefix_a()
-#===============================================================================
-
-
-
-
-
+print "* Get bean b"
+bean = myContainer.get_bean("AnotherBean");
+print bean.get_property()
+print bean.get_bean()

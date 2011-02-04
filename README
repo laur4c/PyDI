@@ -1,0 +1,67 @@
+PYDI: A simple but effective DI and AOP framework for python
+================================================================================
+
+PYDI is a framework that provides you with DI and AOP in your own
+projects. If you're
+familiar with the Spring framework (either for Java or .NET), then
+you'll have no trouble using PYDI. 
+Just create your beans xml file and you're ready to go (see below).
+
+NOTICE: This is an experimental framework (I'm writing it to get a feel for the
+language in question). I will be adding more cool features to pydi (like aop
+support via decorators) and improve it. Be patience,
+pydi is one of my first steps in python... any comments are welcome! ;-)
+
+I read about aop in python, and i saw that python already support this
+concept by using decorators.
+In fact i use them, but i think that using this framework can be
+helpful in keeping your code clear. 
+you only need to configure a xml file and go code your aspects. ;-)
+
+Let's see a little example
+
+xml configuration:
+
+<beans>
+  <bean id="A">
+    <aspect ref="B">
+      <pointcut method="a_method"/>
+    </aspect>
+  </bean>
+  <bean id="B"/>   
+</beans>
+
+aspect class:
+
+  class AnAspect(aspect.AbstractAspect):
+    def invoke(self, methodInvocation):
+      print "do something before proceed..."
+      methodInvocation.proceed()
+
+      print methodInvocation.returnValue()
+      print "do something after proceed"
+
+and then...
+
+  myContainer = pydi.Container("path to ini")
+  myBean = myContainer.get_bean("A")
+  myBean.a_method()
+
+  output:
+    do something before proceed
+    executing a method
+    a method returns this
+    do something after proceed
+
+
+Note: you can see full examples about how to use the framework in the
+examples directory.
+
+
+Thanks
+------
+i want to thank marcelog for his original idea of porting his project (Ding) to
+python (so I can practice a little), so this is my shot at it ;)
+i will take the oportunity to make publicity about his project ;-)
+http://marcelog.github.com/Ding
+Check it out, it's very complete!

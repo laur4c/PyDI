@@ -1,25 +1,24 @@
 class A:
-    a = None
+    a = "A"
+    b = "B"
     
     def __init__(self):
-        print "init...."
+        print "init"
     
-    def a_method(self, arg1, arg2):
-        print "executing a method..."
+    def get_property_a(self, arg1, arg2):
+        print "executing method..."
         print arg1, arg2
-        return "Return value"
+        return self.a
         
-    def b_method(self):
-        print "executing b method..."    
+    def get_property_b(self):
+        print "executing method..."
+        return self.b    
     
-    def c_method(self):
-        print "c"
-        
     def prefix_a(self):
-        print "a"
+        print "executing method..."
     
     def prefix_b(self):
-        print "b"
+        print "executing method..."
         
     def prefix_c(self):
-        print "c"
+        print "executing method..."

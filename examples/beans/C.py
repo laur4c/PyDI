@@ -1,6 +1,6 @@
-import container
+from pydi import aspect
 
-class C(container.AbstractAspect):
+class C(aspect.AbstractAspect):
     
     def invoke(self, methodInvocation):
         print "do something before proceed"

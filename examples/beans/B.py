@@ -1,20 +1,19 @@
 class B:
     
-    a = None
-    b = None
+    property = None
+    bean = None
     
-    def __init__(self, arg1, arg2, arg3, arg4):
-        print arg1, arg2, arg3, arg4
-        self.b
+    def __init__(self, db, host, user, passwd, bean):
+        print db, host, user, passwd, bean
     
-    def set_a(self, value):
-        self.a = value
+    def set_property(self, value):
+        self.property = value
 
-    def get_a(self):
-        return self.a
+    def get_property(self):
+        return self.property
     
-    def set_b(self, value):
-        self.b = value
+    def set_bean(self, value):
+        self.bean = value
         
-    def get_b(self):
-        return self.b
+    def get_bean(self):
+        return self.bean

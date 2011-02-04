@@ -1,0 +1,5 @@
+[production]
+path_container=/resources/container.xml
+path_log=/resources/logging.conf
+
+[development : production]
