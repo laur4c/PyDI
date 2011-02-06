@@ -1,17 +1,20 @@
 import pydi
 
-inifile = "application.ini"
-env = "production"
+options = {
+    'xml_file': 'container.xml',
+    'log_conf': 'logging.conf',
+    'cache_enable': False,
+    'cache_directory': '/tmp/laurac/pydicache'
+}
 
-myContainer = pydi.Container(inifile, env)
+myContainer = pydi.Container(options)
 
-print "* Get bean a"
 bean = myContainer.get_bean("ABean")
 bean.get_property_a("arg1", "arg2")
 
-print "------------------------------------------------------------------------"
-
-print "* Get bean b"
 bean = myContainer.get_bean("AnotherBean");
 print bean.get_property()
-print bean.get_bean()
+print bean.get_bean().get_property_b()
+
+
+
