@@ -19,19 +19,22 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+import aspect
+
 import inspect
 import re
-import aspect
+import logging
 
 class BeanFactory:
     
     provider = None
+    logger = None
         
-    # container of created beans
+    # created beans cache
     cache = {}    
 
-    def __init__(self):
-        """init method.. nothing to do... move on"""        
+    def __init__(self):        
+        self.logger = logging.getLogger("appLogging")  
         
     def set_provider(self, value):
         self.provider = value
@@ -59,8 +62,8 @@ class BeanFactory:
         if created is not False:
             return created
         
-        descriptor = self.provider.get_bean_definition(id)
-        
+        descriptor = self.provider.get_bean_definition(id)            
+                
         # define arguments
         args = self.get_arguments(descriptor.get_init_arguments())
         
@@ -124,7 +127,7 @@ class BeanFactory:
         
         if args:
             return proxy(*args)
-        else:
+        else:            
             return proxy()
     
     def decorate(self, proxy, metadata):

@@ -20,4 +20,6 @@
 # THE SOFTWARE.
 
 from Container import Container
-from BeanFactory import BeanFactory
+
+import BeanFactory
+import providers 

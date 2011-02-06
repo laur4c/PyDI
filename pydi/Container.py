@@ -19,33 +19,30 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import pydi
-import config
-import providers
+from BeanFactory import BeanFactory
+from providers import XMLProvider
+
 import logging
-from xml.dom import minidom
-import imp
+import logging.config
 
 class Container:
     
-    logger = None 
-    configIni = None
+    options = None
+    logger = None     
     factory = None
 
-    def __init__(self, inifile, env):
-        self.configIni = config.ConfigIni(inifile, env)
-        
-        self.logger = logging.getLogger("appLogging")
-        self.logger.debug(inifile) 
+    def __init__(self, options):
+        self.options = options
+        logging.config.fileConfig(self.options['log_conf'])
+        self.logger = logging.getLogger("appLogging")        
 
-    def get_factory(self):
-
-        if isinstance(self.factory, pydi.BeanFactory):
+    def get_factory(self):        
+        if isinstance(self.factory, BeanFactory):
             return self.factory
-
-        provider = providers.XMLProvider(self.configIni.pathContainer)
         
-        factory = pydi.BeanFactory()
+        provider = XMLProvider(self.options)
+        
+        factory = BeanFactory()
         factory.set_provider(provider)
         self.factory = factory
         

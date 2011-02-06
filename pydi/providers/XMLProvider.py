@@ -22,18 +22,27 @@
 import pydi
 from pydi import definitions
 
+import os.path
 import logging
 import libxml2
+import memcache
+import pickle
  
-class XMLProvider:
+class XMLProvider(object):
     
+    cacheEnable = None
+    cacheDirectory = None
     configFile = None
+    cache = {}
     
-    def __init__(self, configFile):
-        self.configFile = configFile
+    def __init__(self, options):
+        self.configFile = options['xml_file']
+        self.cacheEnable = options['cache_enable']
+        self.cacheDirectory = options['cache_directory']
         
     def __get_xmldoc(self):
         return libxml2.parseFile(self.configFile)
+    
     
     
     def get_bean_definition(self, id):
@@ -45,6 +54,9 @@ class XMLProvider:
         @rtype: BeanDefinition
         """
         
+        if self.has_definition(id):                                             
+            return self.get_loaded_definition(id)
+        
         doc = self.__get_xmldoc()        
         context = doc.xpathNewContext()
         
@@ -54,7 +66,7 @@ class XMLProvider:
             xmlNode = xmlNode[0]
             
         except IndexError as exception:
-            raise pydi.providers.BeanNotFoundException(exception)
+            raise pydi.providers.BeanNotFoundException(id + " bean not found ")
 
         #initialize bean definition
         bean = definitions.BeanDefinition()
@@ -87,8 +99,9 @@ class XMLProvider:
         bean.set_properties(properties)
         bean.set_aspects(aspects)
         
-        context.xpathFreeContext()
-       
+        context.xpathFreeContext() 
+               
+        self.load_definition(id, bean)
         return bean
         
     def fetch_argument(self, node):        
@@ -147,18 +160,41 @@ class XMLProvider:
             "aspect pointcuts must be defined"
         )
             
+    def has_definition(self, id):
+        if id in self.cache or self.in_cache(id):
+            return True            
+        return False
+    
+    def in_cache(self, id):
+        if self.cacheEnable is False:
+            return False
         
+        if os.path.isfile(self.cacheDirectory + "/" + id.lower() + ".def"):
+            return True
+        
+        return False
+    
+    def get_loaded_definition(self, id):
+        if id in self.cache:            
+            return self.cache[id]
+        
+        if self.cacheEnable is not False:
+            filename = self.cacheDirectory + "/" + id.lower() + ".def"
+            file = open(filename, "r")
+            
+            self.cache[id] = pickle.load(file)
+            file.close()
+                
+        return self.cache[id]
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+    def load_definition(self, id, definition):
+        self.cache[id] = definition
+                
+        if self.cacheEnable is False:
+            return
+                       
+        filename = self.cacheDirectory + "/" + id.lower() + ".def"        
+        file = open(filename, "w")
+        pickle.dump(definition, file, -1)
+        
+        
