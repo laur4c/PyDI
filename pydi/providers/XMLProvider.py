@@ -19,44 +19,48 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import pydi
 from pydi import definitions
+from pydi import Cache
+from BeanNotFoundException import BeanNotFoundException
 
-import os.path
 import logging
 import libxml2
-import memcache
-import pickle
- 
+
 class XMLProvider(object):
-    
+            
+    xmlfile = None    
     cacheEnable = None
-    cacheDirectory = None
-    configFile = None
-    cache = {}
+    beanDefs = {}
+    beanDefCache = None
     
     def __init__(self, options):
-        self.configFile = options['xml_file']
+        self.xmlfile = options['xml_file']
         self.cacheEnable = options['cache_enable']
-        self.cacheDirectory = options['cache_directory']
+        
+        if self.cacheEnable is True:
+            self.beanDefCache = Cache.Cache(options)
+        
+    def get_name_by_id(self, id):
+        return id.lower() + ".def"
         
     def __get_xmldoc(self):
-        return libxml2.parseFile(self.configFile)
-    
-    
+        return libxml2.parseFile(self.xmlfile)
     
     def get_bean_definition(self, id):
+        if id in self.beanDefs:
+            return self.beanDefs[id]
+        
+        name = self.get_name_by_id(id)
+        if self.beanDefCache and self.beanDefCache.has(name):
+            return self.beanDefCache.fetch(name)
+        
+        return self.load(id)
+    
+    def load(self, id):
         """
-        Parse xml configuration and returns the bean definition
-        
-        @param id: ID Attribute of bean node
-        @return: Bean DTO
-        @rtype: BeanDefinition
+        Parse xml configuration and returns the bean definition        
+        @param id: ID Attribute of bean node        
         """
-        
-        if self.has_definition(id):                                             
-            return self.get_loaded_definition(id)
-        
         doc = self.__get_xmldoc()        
         context = doc.xpathNewContext()
         
@@ -66,14 +70,14 @@ class XMLProvider(object):
             xmlNode = xmlNode[0]
             
         except IndexError as exception:
-            raise pydi.providers.BeanNotFoundException(id + " bean not found ")
+            raise BeanNotFoundException(id + " bean not found ")
 
         #initialize bean definition
-        bean = definitions.BeanDefinition()
-        bean.set_id(id)
-        bean.set_fullname(xmlNode.prop("fullname"))
+        beanDef = definitions.BeanDefinition()
+        beanDef.set_id(id)
+        beanDef.set_fullname(xmlNode.prop("fullname"))
         
-        #iterates node childs of bean tag          
+        #iterates node childs of bean tag
         arguments = None
         properties = None
         aspects = None
@@ -95,14 +99,13 @@ class XMLProvider(object):
                     aspects = []
                 aspects.append(self.fetch_aspect(child))
             
-        bean.set_init_arguments(arguments)
-        bean.set_properties(properties)
-        bean.set_aspects(aspects)
-        
-        context.xpathFreeContext() 
-               
-        self.load_definition(id, bean)
-        return bean
+        beanDef.set_init_arguments(arguments)
+        beanDef.set_properties(properties)
+        beanDef.set_aspects(aspects)
+        context.xpathFreeContext()        
+
+        self.store(id, beanDef)
+        return beanDef
         
     def fetch_argument(self, node):        
         arg = definitions.ArgumentBeanDefinition()
@@ -160,41 +163,12 @@ class XMLProvider(object):
             "aspect pointcuts must be defined"
         )
             
-    def has_definition(self, id):
-        if id in self.cache or self.in_cache(id):
-            return True            
-        return False
-    
-    def in_cache(self, id):
-        if self.cacheEnable is False:
-            return False
+    def store(self, id, beanDef):
+        self.beanDefs[id] = beanDef
         
-        if os.path.isfile(self.cacheDirectory + "/" + id.lower() + ".def"):
-            return True
+        if self.beanDefCache:
+            name = self.get_name_by_id(id)
+            self.beanDefCache.store(name, beanDef)        
         
-        return False
-    
-    def get_loaded_definition(self, id):
-        if id in self.cache:            
-            return self.cache[id]
-        
-        if self.cacheEnable is not False:
-            filename = self.cacheDirectory + "/" + id.lower() + ".def"
-            file = open(filename, "r")
-            
-            self.cache[id] = pickle.load(file)
-            file.close()
-                
-        return self.cache[id]
-
-    def load_definition(self, id, definition):
-        self.cache[id] = definition
-                
-        if self.cacheEnable is False:
-            return
-                       
-        filename = self.cacheDirectory + "/" + id.lower() + ".def"        
-        file = open(filename, "w")
-        pickle.dump(definition, file, -1)
         
         

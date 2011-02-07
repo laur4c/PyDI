@@ -21,5 +21,6 @@
 
 from Container import Container
 
+import Cache
 import BeanFactory
 import providers 
