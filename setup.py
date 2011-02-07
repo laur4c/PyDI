@@ -30,5 +30,5 @@ setup(
     description='DI and AOP framework for python',
     author='Laura Corvalán',
     author_email='corvalan.laura@gmail.com',
-    packages=['pydi', 'pydi.aspect', 'pydi.config', 'pydi.definitions', 'pydi.providers'],
+    packages=['pydi', 'pydi.aspect', 'pydi.definitions', 'pydi.providers'],
 )
