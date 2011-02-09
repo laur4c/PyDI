@@ -19,7 +19,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import aspect
+from aspect import MethodInvocation
 
 import inspect
 import re
@@ -30,8 +30,8 @@ class BeanFactory:
     provider = None
     logger = None
         
-    # created beans cache
-    cache = {}    
+    #beans already instantiated
+    beans = {}    
 
     def __init__(self):        
         self.logger = logging.getLogger("appLogging")  
@@ -40,19 +40,19 @@ class BeanFactory:
         self.provider = value
     
     def store(self, id, bean):
-        if id in self.cache:
+        if id in self.beans:
             return
 
-        self.cache[id] = bean
+        self.beans[id] = bean
         
     def is_created(self, id):
-        if id in self.cache:
+        if id in self.beans:
             return True
         return False
     
     def ask_for_bean(self, id):
         if self.is_created(id):
-            return self.cache[id]
+            return self.beans[id]
         
         return False
         
@@ -147,8 +147,8 @@ class BeanFactory:
         joinpoints = self.find_joinpoints(proxy, pointcut)
         
         for joinpoint in joinpoints:
-            
-            methodInvocation = aspect.MethodInvocation()
+                        
+            methodInvocation = MethodInvocation()
             methodInvocation.pointcut = joinpoint
             
             method = getattr(proxy, joinpoint)

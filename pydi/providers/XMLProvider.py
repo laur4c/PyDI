@@ -19,8 +19,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from pydi import definitions
-from pydi import Cache
+from pydi.definitions import AspectBeanDefinitionException
+from pydi.definitions import AspectBeanDefinition
+from pydi.definitions import BeanDefinition
+from pydi.definitions import ArgumentBeanDefinition
+from pydi.definitions import PropertyBeanDefinition
+from pydi.Cache import Cache
 from BeanNotFoundException import BeanNotFoundException
 
 import logging
@@ -38,14 +42,8 @@ class XMLProvider(object):
         self.cacheEnable = options['cache_enable']
         
         if self.cacheEnable is True:
-            self.beanDefCache = Cache.Cache(options)
+            self.beanDefCache = Cache(options)
         
-    def get_name_by_id(self, id):
-        return id.lower() + ".def"
-        
-    def __get_xmldoc(self):
-        return libxml2.parseFile(self.xmlfile)
-    
     def get_bean_definition(self, id):
         if id in self.beanDefs:
             return self.beanDefs[id]
@@ -54,13 +52,9 @@ class XMLProvider(object):
         if self.beanDefCache and self.beanDefCache.has(name):
             return self.beanDefCache.fetch(name)
         
-        return self.load(id)
+        return self.get_from_xml(id, self.get_beandef_from_xml)
     
-    def load(self, id):
-        """
-        Parse xml configuration and returns the bean definition        
-        @param id: ID Attribute of bean node        
-        """
+    def get_from_xml(self, id, getBeanDef):
         doc = self.__get_xmldoc()        
         context = doc.xpathNewContext()
         
@@ -71,9 +65,21 @@ class XMLProvider(object):
             
         except IndexError as exception:
             raise BeanNotFoundException(id + " bean not found ")
-
+        
+        beanDef = getBeanDef(id, xmlNode)
+        
+        context.xpathFreeContext()
+        return beanDef
+        
+    
+    def get_beandef_from_xml(self, id, xmlNode):
+        """
+        Parse xml configuration and returns the bean definition        
+        @param id: ID Attribute of bean node        
+        """
+        
         #initialize bean definition
-        beanDef = definitions.BeanDefinition()
+        beanDef = BeanDefinition()
         beanDef.set_id(id)
         beanDef.set_fullname(xmlNode.prop("fullname"))
         
@@ -101,14 +107,13 @@ class XMLProvider(object):
             
         beanDef.set_init_arguments(arguments)
         beanDef.set_properties(properties)
-        beanDef.set_aspects(aspects)
-        context.xpathFreeContext()        
+        beanDef.set_aspects(aspects)                
 
         self.store(id, beanDef)
         return beanDef
         
     def fetch_argument(self, node):        
-        arg = definitions.ArgumentBeanDefinition()
+        arg = ArgumentBeanDefinition()
         
         child = node.children
         while child is not None:
@@ -126,7 +131,7 @@ class XMLProvider(object):
         return arg
         
     def fetch_property(self, node):
-        property = definitions.PropertyBeanDefinition()
+        property = PropertyBeanDefinition()
         property.set_name(node.prop("name"))
 
         child = node.children
@@ -144,7 +149,7 @@ class XMLProvider(object):
         return property
 
     def fetch_aspect(self, node):
-        aspect = definitions.AspectBeanDefinition()
+        aspect = AspectBeanDefinition()
         aspect.set_bean(node.prop("ref"))
         
         pointcuts = []
@@ -159,7 +164,7 @@ class XMLProvider(object):
             aspect.set_pointcuts(pointcuts)
             return aspect
             
-        raise definitions.AspectBeanDefinitionException(
+        raise AspectBeanDefinitionException(
             "aspect pointcuts must be defined"
         )
             
@@ -169,6 +174,11 @@ class XMLProvider(object):
         if self.beanDefCache:
             name = self.get_name_by_id(id)
             self.beanDefCache.store(name, beanDef)        
+
+    def get_name_by_id(self, id):
+        return id.lower() + ".def"
         
+    def __get_xmldoc(self):
+        return libxml2.parseFile(self.xmlfile)        
         
         
