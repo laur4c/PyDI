@@ -29,6 +29,7 @@ from BeanNotFoundException import BeanNotFoundException
 
 import logging
 import libxml2
+import sys
 
 class XMLProvider(object):
             
@@ -87,9 +88,9 @@ class XMLProvider(object):
         arguments = None
         properties = None
         aspects = None
-
+        
         for child in xmlNode.children:
-                
+            
             if child.parent.name == "init" and child.name == "arg":
                 if arguments is None:
                     arguments = []
@@ -113,38 +114,30 @@ class XMLProvider(object):
         return beanDef
         
     def fetch_argument(self, node):        
-        arg = ArgumentBeanDefinition()
+        arg = ArgumentBeanDefinition()        
+        obj = node.children 
         
-        child = node.children
-        while child is not None:
-                        
-            if child.type == "element":
-                arg.set_type("bean")                
-                arg.set_value(child.prop("bean"))
-                       
-            elif child.type == "text":
-                arg.set_type("plain")
-                arg.set_value(child.content)
+        if obj.type == "text":
+            arg.set_type("plain")
+            arg.set_value(obj.content)
             
-            child = child.next
-
+        elif obj.type == "element":
+            arg.set_type("bean")
+            arg.set_value(obj.prop("bean"))
+            
         return arg
         
     def fetch_property(self, node):
         property = PropertyBeanDefinition()
         property.set_name(node.prop("name"))
 
-        child = node.children
-        while child is not None:           
-            if child.type == "element":                
-                property.set_type("bean")            
-                property.set_value(child.prop("bean"))                
-                
-            child = child.next
-         
-        if property.get_value() is None:
-            property.set_type("plain")
-            property.set_value(node.content);
+        obj = node.children        
+        if isinstance(obj.next, libxml2.xmlNode):
+            property.set_type("bean")            
+            property.set_value(obj.next.prop("bean"))
+        else:
+            property.set_type("plain")  
+            property.set_value(obj.content);
         
         return property
 
